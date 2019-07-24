@@ -1,6 +1,7 @@
 import os
 import bpy
 from bpy_extras.io_utils import ExportHelper
+import subprocess
 
 
     
@@ -11,22 +12,32 @@ class MeshPSLGButton(bpy.types.Operator):
     bl_options = {"UNDO"}
     
     def invoke(self, context, event):
-        print("executing")
+        chiprops = context.scene.chitech_properties
+        
+        # Check object selection valid
         cur_objname = context.scene.chitech_properties.current_object
         if (cur_objname == ""):
             self.report({'WARNING'},"No object selected")
             return {"FINISHED"}
         
+        # Check ChiTech Path is specified
         pathexe = context.scene.chitech_properties.path_to_chitech_exe
         if ((pathexe == "") or (pathexe == "..")):
             self.report({'WARNING'},"ChiTech executable path not set")
             return {"FINISHED"}
         
+        # Check working directory specified
         pathdir = context.scene.chitech_properties.path_to_workdir
         if ((pathdir == "") or (pathdir == "..")):
             self.report({'WARNING'},"Working directory not set")
             return {"FINISHED"}
+
+        # Create Mesh directory
+        pathdir = chiprops.path_to_workdir
+        if not os.path.exists(pathdir+'/Mesh'):
+            os.mkdir(pathdir+'/Mesh')
         
+        # Export PSLG
         scene = context.scene
         bpy.ops.object.select_all(action='DESELECT')
         for obj in scene.objects:
@@ -34,7 +45,7 @@ class MeshPSLGButton(bpy.types.Operator):
                 bpy.data.objects[cur_objname].select = True
                 bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
                 bpy.ops.export_scene.obj(
-                   filepath       = pathdir+"/"+cur_objname+"PreMesh.obj",
+                   filepath       = pathdir+"/Mesh/"+cur_objname+"PreMesh.obj",
                    check_existing = False,
                    axis_forward   = 'Y',
                    axis_up        = 'Z',
@@ -42,12 +53,12 @@ class MeshPSLGButton(bpy.types.Operator):
                    use_materials  = False)
                 self.report({'INFO'},"PSLG export to " + pathdir+"/"+cur_objname+"PreMesh.obj")
         
-        h = open(pathdir+"/"+cur_objname+"PreMesh.lua",'w')  
+        h = open(pathdir+"/Mesh/"+cur_objname+"PreMesh.lua",'w')  
         h.write('chiMeshHandlerCreate()\n')
         h.write('\n')
         h.write('newSurfMesh = chiSurfaceMeshCreate();\n')
         h.write('chiSurfaceMeshImportFromOBJFile(newSurfMesh,"')
-        h.write(pathdir+"/"+cur_objname+'PreMesh.obj')
+        h.write("Mesh/"+cur_objname+'PreMesh.obj')
         h.write('",true)\n')
         h.write('\n')
         h.write('region1 = chiRegionCreate()\n')
@@ -62,12 +73,22 @@ class MeshPSLGButton(bpy.types.Operator):
         h.write('chiSurfaceMesherExecute();\n')
         h.write('\n')
         h.write('chiSurfaceMesherExportToObj("')
-        h.write(pathdir+"/"+cur_objname+'PostMesh.obj')
+        h.write("Mesh/"+cur_objname+'PostMesh.obj')
         h.write('")\n')
         h.close()  
         
-        print(os.popen(pathexe + ' ' + pathdir+"/"+cur_objname+"PreMesh.lua").read())  
-        
+        # $$$$$$$$$$$$$$$$$$$$$  Execute ChiTech
+        #print(os.popen(pathexe + ' ' + pathdir+"/"+cur_objname+"PreMesh.lua").read())  
+        process = subprocess.Popen([pathexe,
+            "Mesh/" + cur_objname+"PreMesh.lua"],
+            cwd=pathdir,
+            stdout=subprocess.PIPE,
+            universal_newlines=True)
+        process.wait()
+        out,err = process.communicate()
+        print(out)
+        # $$$$$$$$$$$$$$$$$$$$$
+
         new_objname = cur_objname+'TriMesh'   
         
         for obj in scene.objects:
@@ -76,7 +97,7 @@ class MeshPSLGButton(bpy.types.Operator):
                 bpy.data.objects[new_objname].select = True
                 bpy.ops.object.delete(use_global=True)
         
-        bpy.ops.import_scene.obj(filepath=(pathdir+"/"+cur_objname+'PostMesh.obj'),
+        bpy.ops.import_scene.obj(filepath=(pathdir+"/Mesh/"+cur_objname+'PostMesh.obj'),
                                  axis_forward = 'Y',
                                  axis_up      = 'Z')    
                 

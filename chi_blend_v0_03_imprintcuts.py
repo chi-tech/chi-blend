@@ -23,7 +23,7 @@ class ImprintCutLines(bpy.types.Operator):
 
         bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
         bpy.ops.object.mode_set(mode='EDIT')
-        bpy.ops.mesh.knife_project()
+        bpy.ops.mesh.knife_project(cut_through=True)
         bpy.ops.object.mode_set(mode='OBJECT')
 
         # Make current_object active

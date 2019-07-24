@@ -52,6 +52,7 @@ class ChiTechProperties(bpy.types.PropertyGroup):
 
     extrusion_layers    = bpy.props.CollectionProperty(type=VecExtrusionLayer)
     num_materials       = bpy.props.IntProperty(default=0,min=0,step=1)
+    layer_insert_before = bpy.props.IntProperty(default=-1,min=-1,step=1)
 
     materials           = bpy.props.CollectionProperty(type=VecMaterial)
     num_cells_created   = bpy.props.IntProperty(default=0)
@@ -70,8 +71,8 @@ def register():
         bpy.data.scenes[0].chitech_properties.path_to_chitech_exe = os.environ.get('CHITECH_ROOT')+"ChiTech"
     else:
         bpy.data.scenes[0].chitech_properties.path_to_chitech_exe = ""
-    bpy.data.scenes[0].chitech_properties.extrusion_layers.clear()
-    bpy.data.scenes[0].chitech_properties.materials.clear()
+    #bpy.data.scenes[0].chitech_properties.extrusion_layers.clear()
+    #bpy.data.scenes[0].chitech_properties.materials.clear()
     
 
 def unregister():

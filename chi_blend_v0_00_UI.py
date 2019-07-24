@@ -153,12 +153,14 @@ class ExtrusionMeshPanel(bpy.types.Panel):
 
         row = layout.row()
         row.label(text="Extrusion layers")
+        row.prop(chiprops,"layer_insert_before",text="Insert after")
         row.operator("chitech.addextrusionlayer",icon='ZOOMIN',text="")
         row.operator("chitech.removeextrusionlayer",icon='ZOOMOUT',text="")
 
         for i in range(0,len(chiprops.extrusion_layers)):
             ext_layer = chiprops.extrusion_layers[i]
             row = layout.row()
+            row.label(text=str(i))
             row.prop(chiprops.extrusion_layers[i],"name",text="")
             row.prop(chiprops.extrusion_layers[i],"height",text="")
             row.prop(chiprops.extrusion_layers[i],"subdivs",text="")
@@ -166,6 +168,7 @@ class ExtrusionMeshPanel(bpy.types.Panel):
         layout.operator("chitech.generateextrusion",text="Generate Extrusion")
         layout.label(text="Number of cells created: "+\
                       str(chiprops.num_cells_created))
+        layout.operator("chitech.exportextrusion",text="Export Extrusion")
 
 def register():
     bpy.utils.register_class(ToolsPanel)
