@@ -99,14 +99,8 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
 
 
         # Generate cutlines button
-        split = layout.split(percentage=0.75)
-        col1 = split.column()
-        col2 = split.column()
-        split1 = col1.split(percentage=(1/3))
-        col1_1 = split1.column()
-        col1_2 = split1.column()
-        #col1_2.scale_y = 2.0
-        col1_2.operator("chitech.addcutsbutton",text="Generate Cutlines")
+        layout.operator("chitech.addcutsbutton",text="Generate Eq.Spaced Cutlines")
+        layout.operator("chitech.addbalcutsbutton",text="Generate Balanced Cutlines")
 
         # Imprint cutlines button
         split = layout.split(percentage=0.75)
@@ -116,7 +110,7 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
         col1_1 = split1.column()
         col1_2 = split1.column()
         col1_2.operator("chitech.imprintcutsbutton",text="Imprint Cutlines")
-
+        layout.operator("chitech.getopenedgesbutton",text="Get open edges")
         layout.operator("chitech.exporttemplatebutton",text="Export ChiTech Mesh")
         
 
