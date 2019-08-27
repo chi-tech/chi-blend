@@ -11,7 +11,6 @@ class ToolsPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "ChiTech"
     
     props=[]
 
@@ -52,10 +51,10 @@ class ToolsPanel(bpy.types.Panel):
         
         # Mesh PSLG
         #layout.operator("chitech.pslgbutton",text="ja")
-        split = layout.split(percentage=0.66)
+        split = layout.split(factor=0.66)
         col1 = split.column()
         col2 = split.column()
-        split1 = col1.split(percentage=0.5)
+        split1 = col1.split(factor=0.5)
         col1_1 = split1.column()
         col1_2 = split1.column()
         col1_2.operator("chitech.pslgbutton",text="Mesh PSLG")
@@ -68,7 +67,6 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "ChiTech"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self,context):
@@ -76,7 +74,7 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
         scene = context.scene
 
         #Number of cuts properties
-        split = layout.split(percentage=0.666)
+        split = layout.split(factor=0.666)
         col1 = split.column()
         col2 = split.column()
         col1.label(text="Number of X-cuts")
@@ -85,7 +83,7 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
         col2.prop(scene.chitech_properties,"num_y_cuts",text="")
 
         #Load balance factors
-        split = layout.split(percentage=0.8)
+        split = layout.split(factor=0.8)
         col1 = split.column()
         col2 = split.column()
         col1.label(text="Estimated LBF before imprinting: ")
@@ -103,14 +101,14 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
         layout.operator("chitech.addbalcutsbutton",text="Generate Balanced Cutlines")
 
         # Imprint cutlines button
-        split = layout.split(percentage=0.75)
+        split = layout.split(factor=0.75)
         col1 = split.column()
         col2 = split.column()
-        split1 = col1.split(percentage=(1/3))
+        split1 = col1.split(factor=(1/3))
         col1_1 = split1.column()
         col1_2 = split1.column()
         col1_2.operator("chitech.imprintcutsbutton",text="Imprint Cutlines")
-        layout.operator("chitech.getopenedgesbutton",text="Get open edges")
+        layout.operator("chitech.getopenedgesbutton",text="Compute Mesh Stats")
         layout.operator("chitech.exporttemplatebutton",text="Export ChiTech Mesh")
         
 
@@ -121,7 +119,6 @@ class ExtrusionMeshPanel(bpy.types.Panel):
     bl_space_type = 'VIEW_3D'
     bl_region_type = 'TOOLS'
     bl_context = "objectmode"
-    bl_category = "ChiTech"
     bl_options = {'DEFAULT_CLOSED'}
 
     def draw(self,context):
@@ -135,8 +132,8 @@ class ExtrusionMeshPanel(bpy.types.Panel):
 
         row = layout.row()
         row.label(text="Materials")
-        row.operator("chitech.addmaterial",icon='ZOOMIN',text="")
-        row.operator("chitech.removematerial",icon='ZOOMOUT',text="")
+        row.operator("chitech.addmaterial",icon='TRIA_UP',text="")
+        row.operator("chitech.removematerial",icon='TRIA_DOWN',text="")
 
         for i in range(0,len(chiprops.materials)):
             material = chiprops.materials[i]
@@ -148,20 +145,29 @@ class ExtrusionMeshPanel(bpy.types.Panel):
         row = layout.row()
         row.label(text="Extrusion layers")
         row.prop(chiprops,"layer_insert_before",text="Insert after")
-        row.operator("chitech.addextrusionlayer",icon='ZOOMIN',text="")
-        row.operator("chitech.removeextrusionlayer",icon='ZOOMOUT',text="")
+        row.operator("chitech.addextrusionlayer",icon='TRIA_UP',text="")
+        row.operator("chitech.removeextrusionlayer",icon='TRIA_DOWN',text="")
 
         for i in range(0,len(chiprops.extrusion_layers)):
             ext_layer = chiprops.extrusion_layers[i]
             row = layout.row()
-            row.label(text=str(i))
-            row.prop(chiprops.extrusion_layers[i],"name",text="")
-            row.prop(chiprops.extrusion_layers[i],"height",text="")
-            row.prop(chiprops.extrusion_layers[i],"subdivs",text="")
+            cols = row.split(factor=1/8)
+            col1 = cols.column()
+            
+            cols_b = cols.column().split(factor=0.5)
+            col2 = cols_b.column()
+            col3 = cols_b.column()
+            col4 = cols_b.column()
+            col1.label(text=str(i))
+            col2.prop(chiprops.extrusion_layers[i],"name",text="")
+            col3.prop(chiprops.extrusion_layers[i],"height",text="")
+            col4.prop(chiprops.extrusion_layers[i],"subdivs",text="")
 
         layout.operator("chitech.generateextrusion",text="Generate Extrusion")
         layout.label(text="Number of cells created: "+\
                       str(chiprops.num_cells_created))
+        layout.label(text="Total individual layers created: "+\
+                      str(chiprops.num_layers_created))
         layout.operator("chitech.exportextrusion",text="Export Extrusion")
 
 def register():

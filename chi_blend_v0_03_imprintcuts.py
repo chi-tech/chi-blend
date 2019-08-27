@@ -21,7 +21,7 @@ class ImprintCutLines(bpy.types.Operator):
         bpy.ops.object.select_pattern(pattern="Ycut*")
         bpy.ops.object.select_pattern(pattern=cur_objname+"*")
 
-        bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
+        bpy.context.view_layer.objects.active = bpy.data.objects[cur_objname]
         bpy.ops.object.mode_set(mode='EDIT')
         bpy.ops.mesh.knife_project(cut_through=True)
         bpy.ops.object.mode_set(mode='OBJECT')
@@ -29,7 +29,7 @@ class ImprintCutLines(bpy.types.Operator):
         # Make current_object active
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_pattern(pattern=cur_objname+"*")
-        bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
+        bpy.context.view_layer.objects.active = bpy.data.objects[cur_objname]
 
         lbf = context.scene.chiutilsA.ComputeLBF(context)
 

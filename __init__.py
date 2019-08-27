@@ -1,6 +1,11 @@
 bl_info = {
     "name": "ChiTech Mesh Operations",
     "author": "Jan Vermaak",
+    "description" : "",
+    "blender" : (2, 80, 0),
+    "version" : (0, 0, 1),
+    "location" : "",
+    "warning" : "",
     "category": "ChiTech"
 }
 modulesNames = ['chi_blend_v0',
@@ -41,5 +46,15 @@ def unregister():
             if hasattr(sys.modules[currentModuleName], 'unregister'):
                 sys.modules[currentModuleName].unregister()
  
-if __name__ == "__main__":
-    register()
+# if __name__ == "__main__":
+#     register()
+#register()
+# import bpy
+# from . chi_blend_v0 import VecDbl
+
+# classes = (chi_blend_v0.VecDbl,
+#            chi_blend_v0.VecExtrusionLayer,
+#            chi_blend_v0.VecMaterial,
+#            chi_blend_v0.ChiTechProperties)
+
+# register, unregister = bpy.utils.register_classes_factory(classes)

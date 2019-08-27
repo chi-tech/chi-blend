@@ -102,7 +102,7 @@ class ChiUtilsA(bpy.types.PropertyGroup):
         exp_objname = chiprops.current_object+"TriMesh"
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_pattern(pattern=exp_objname+"*")
-        bpy.context.scene.objects.active = bpy.data.objects[exp_objname]
+        bpy.context.view_layer.objects.active = bpy.data.objects[exp_objname]
 
         bpy.ops.export_scene.obj(
                    filepath       = pathdir+"/"+cur_objname+'Mesh.obj',
@@ -111,6 +111,15 @@ class ChiUtilsA(bpy.types.PropertyGroup):
                    axis_up        = 'Z',
                    use_selection  = True,
                    use_materials  = False)
+
+    def ShowMessageBox(self,message = "", title = "Message Box", icon = 'INFO'):
+
+        def draw(self, context):
+            lines = message.splitlines()
+            for line in lines:
+                self.layout.label(text=line)
+
+        bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
 
 def register():
     bpy.utils.register_class(ChiUtilsA)

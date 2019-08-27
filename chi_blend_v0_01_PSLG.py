@@ -42,8 +42,8 @@ class MeshPSLGButton(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
         for obj in scene.objects:
             if (obj.name == cur_objname):
-                bpy.data.objects[cur_objname].select = True
-                bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
+                bpy.data.objects[cur_objname].select_set(True)
+                # bpy.context.scene.objects.active = bpy.data.objects[cur_objname]
                 bpy.ops.export_scene.obj(
                    filepath       = pathdir+"/Mesh/"+cur_objname+"PreMesh.obj",
                    check_existing = False,
@@ -94,7 +94,7 @@ class MeshPSLGButton(bpy.types.Operator):
         for obj in scene.objects:
             if (obj.name == new_objname):
                 bpy.ops.object.select_all(action='DESELECT')
-                bpy.data.objects[new_objname].select = True
+                bpy.data.objects[new_objname].select_set(True)
                 bpy.ops.object.delete(use_global=True)
         
         bpy.ops.import_scene.obj(filepath=(pathdir+"/Mesh/"+cur_objname+'PostMesh.obj'),
@@ -107,7 +107,7 @@ class MeshPSLGButton(bpy.types.Operator):
         for obj in bpy.context.selected_objects:
             obj.name = new_objname 
             
-        bpy.context.scene.objects.active = bpy.data.objects[new_objname]
+        bpy.context.view_layer.objects.active = bpy.data.objects[new_objname]
         bpy.context.object.show_all_edges = True
 
         bbox = bpy.data.objects[new_objname].bound_box

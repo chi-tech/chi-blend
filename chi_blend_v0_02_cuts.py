@@ -13,6 +13,11 @@ class AddCutLinesButton(bpy.types.Operator):
     already_invoked = False
 
     def CreateXCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('X_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('X_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
         for i in range(0,chiprops.num_x_cuts):
             d = 0.1*(chiprops.ymax-chiprops.ymin)
             dmin = chiprops.ymin-d
@@ -29,20 +34,25 @@ class AddCutLinesButton(bpy.types.Operator):
             new_origin = mathutils.Vector((f,dmin,0.0))
             obj.data.transform(mathutils.Matrix.Translation(-new_origin))
             obj.matrix_world.translation += new_origin
-            context.scene.objects.link(obj)
-            
-            #bpy.ops.object.select_all(action = "DESELECT")
-            obj.select = True
-            context.scene.objects.active = obj
+ 
+            newCol.objects.link(obj)
+
+            obj.select_set(True)
+            #context.scene.objects.active = obj
             #bpy.ops.object.mode_set(mode="EDIT")
 
     def CreateYCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('Y_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('Y_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
         for i in range(0,chiprops.num_y_cuts):
             d = 0.1*(chiprops.xmax-chiprops.xmin)
             dmin = chiprops.xmin-d
             dmax = chiprops.xmax+d
             f = chiprops.y_cuts[i].value
-            #print("Xcut %d = %g" %(i,chiprops.x_cuts[i].value))
+            print("Xcut %d = %g" %(i,chiprops.x_cuts[i].value))
             point1 = [ dmin, f, 0.0]
             point2 = [ dmax, f, 0.0]
             mesh = bpy.data.meshes.new("")
@@ -53,11 +63,12 @@ class AddCutLinesButton(bpy.types.Operator):
             new_origin = mathutils.Vector((dmin,f,0.0))
             obj.data.transform(mathutils.Matrix.Translation(-new_origin))
             obj.matrix_world.translation += new_origin
-            context.scene.objects.link(obj)
+            # context.scene.objects.link(obj)
+            newCol.objects.link(obj)
             
             #bpy.ops.object.select_all(action = "DESELECT")
-            obj.select = True
-            context.scene.objects.active = obj
+            obj.select_set(True)
+            #context.scene.objects.active = obj
             #bpy.ops.object.mode_set(mode="EDIT")
     
     # ===========================================
@@ -73,6 +84,15 @@ class AddCutLinesButton(bpy.types.Operator):
         # =============== Clear all x and y cuts
         chiprops.x_cuts.clear()
         chiprops.y_cuts.clear()
+
+        # ============== Get selection bound box
+        bbox = bpy.data.objects[chiprops.current_object+"TriMesh"].bound_box
+        scale = bpy.data.objects[chiprops.current_object+"TriMesh"].scale
+        location = bpy.data.objects[chiprops.current_object+"TriMesh"].location
+        context.scene.chitech_properties.xmin = bbox[0][0]*scale[0]+location[0]
+        context.scene.chitech_properties.ymin = bbox[0][1]*scale[1]+location[1]
+        context.scene.chitech_properties.xmax = bbox[7][0]*scale[0]+location[0]
+        context.scene.chitech_properties.ymax = bbox[7][1]*scale[1]+location[1]
 
         # ============== Delete existing objects
         bpy.ops.object.select_all(action='DESELECT')
@@ -139,6 +159,11 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
     already_invoked = False
 
     def CreateXCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('X_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('X_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
         for i in range(0,chiprops.num_x_cuts):
             d = 0.1*(chiprops.ymax-chiprops.ymin)
             dmin = chiprops.ymin-d
@@ -147,6 +172,8 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
             #print("Xcut %d = %g" %(i,chiprops.x_cuts[i].value))
             point1 = [ f, dmin, 0.0]
             point2 = [ f, dmax, 0.0]
+            print(point1)
+            print(point2)
             mesh = bpy.data.meshes.new("")
             mesh.from_pydata([point1,point2], [[0,1]], [])
             mesh.update()
@@ -155,14 +182,17 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
             new_origin = mathutils.Vector((f,dmin,0.0))
             obj.data.transform(mathutils.Matrix.Translation(-new_origin))
             obj.matrix_world.translation += new_origin
-            context.scene.objects.link(obj)
-            
-            #bpy.ops.object.select_all(action = "DESELECT")
-            obj.select = True
-            context.scene.objects.active = obj
+            newCol.objects.link(obj)
+
+            obj.select_set(True)
             #bpy.ops.object.mode_set(mode="EDIT")
 
     def CreateYCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('Y_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('Y_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
         for i in range(0,chiprops.num_y_cuts):
             d = 0.1*(chiprops.xmax-chiprops.xmin)
             dmin = chiprops.xmin-d
@@ -179,11 +209,9 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
             new_origin = mathutils.Vector((dmin,f,0.0))
             obj.data.transform(mathutils.Matrix.Translation(-new_origin))
             obj.matrix_world.translation += new_origin
-            context.scene.objects.link(obj)
-            
-            #bpy.ops.object.select_all(action = "DESELECT")
-            obj.select = True
-            context.scene.objects.active = obj
+            newCol.objects.link(obj)
+
+            obj.select_set(True)
             #bpy.ops.object.mode_set(mode="EDIT")
 
     # ===========================================
@@ -199,6 +227,15 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
          # =============== Clear all x and y cuts
         chiprops.x_cuts.clear()
         chiprops.y_cuts.clear()
+
+        # ============== Get selection bound box
+        bbox = bpy.data.objects[chiprops.current_object+"TriMesh"].bound_box
+        scale = bpy.data.objects[chiprops.current_object+"TriMesh"].scale
+        location = bpy.data.objects[chiprops.current_object+"TriMesh"].location
+        context.scene.chitech_properties.xmin = bbox[0][0]*scale[0]+location[0]
+        context.scene.chitech_properties.ymin = bbox[0][1]*scale[1]+location[1]
+        context.scene.chitech_properties.xmax = bbox[7][0]*scale[0]+location[0]
+        context.scene.chitech_properties.ymax = bbox[7][1]*scale[1]+location[1]
 
         # ============== Delete existing objects
         bpy.ops.object.select_all(action='DESELECT')
@@ -236,8 +273,8 @@ class AddBalancedCutLinesButton(bpy.types.Operator):
         bpy.ops.object.select_all(action='DESELECT')
         for obj in scene.objects:
             if (obj.name == (cur_objname+"TriMesh")):
-                bpy.data.objects[cur_objname+"TriMesh"].select = True
-                bpy.context.scene.objects.active = bpy.data.objects[cur_objname+"TriMesh"]
+                bpy.data.objects[cur_objname+"TriMesh"].select_set(True)
+                bpy.context.view_layer.objects.active = bpy.data.objects[cur_objname+"TriMesh"]
                 bpy.ops.export_scene.obj(
                    filepath       = pathdir+"/Mesh/"+cur_objname+"BalancedCuts.obj",
                    check_existing = False,

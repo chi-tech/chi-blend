@@ -108,7 +108,7 @@ class GenerateExtrusion(bpy.types.Operator):
         cur_objname = chiprops.current_object
         bpy.ops.object.select_all(action='DESELECT')
         bpy.ops.object.select_pattern(pattern="*TriMesh*")
-        bpy.context.scene.objects.active = \
+        bpy.context.view_layer.objects.active = \
             bpy.data.objects[cur_objname+"TriMesh"]
         bpy.ops.export_scene.obj(
                    filepath       = pathdir + "/Mesh/" + \
@@ -124,19 +124,19 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
-                bpy.data.objects[obj.name].hide = False
+                bpy.data.objects[obj.name].hide_set(False)
 
         # Export all logical volumes
         for m in range(0,len(chiprops.materials)):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 bpy.ops.object.select_all(action='DESELECT')
-                bpy.data.objects[obj.name].select = True
+                bpy.data.objects[obj.name].select_set(True)
                 bpy.ops.export_scene.obj(
                    filepath       = pathdir + "/Mesh/" + \
                        "LV_" + obj.name + ".obj",
@@ -152,9 +152,9 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
-                bpy.data.objects[obj.name].hide = True
+                bpy.data.objects[obj.name].hide_set(True)
 
         # Generate ChiTech inputs for extrusion
         h = open(pathdir+"/Mesh/"+cur_objname+"Extrusion.lua",'w')  
@@ -201,7 +201,7 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('surf_lv'+str(lv_count) + " = chiSurfaceMeshCreate();\n")
@@ -214,7 +214,7 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('chiSurfaceMeshImportFromOBJFile(')
@@ -228,7 +228,7 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('vol_lv'+str(lv_count)+' = ')
@@ -242,7 +242,7 @@ class GenerateExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('chiVolumeMesherSetProperty(')
@@ -266,6 +266,7 @@ class GenerateExtrusion(bpy.types.Operator):
             h.write("Mesh/" + cur_objname+'_VM.obj",false)\n')
             h.write('chiRegionExportMeshToObj(region1,"')
             h.write("Mesh/" + cur_objname+'_VM.obj",true)\n')
+        h.write('chiRegionExportMeshToVTK(region1,"Z_VTK_Mesh")')
         h.close()  
 
         # $$$$$$$$$$$$$$$$$$$$$  Execute ChiTech
@@ -279,6 +280,14 @@ class GenerateExtrusion(bpy.types.Operator):
         process.wait()
         out,err = process.communicate()
         print(out)
+
+        # Extracting number of layers generated
+        cell_start = out.find('Total number of cell layers is')
+        cell_end   = out.find('\n',cell_start)
+        num_lay = int(out[(cell_start+30):cell_end])
+        chiprops.num_layers_created = num_lay
+
+        # Extracting number of cells generated
         cell_start = out.find('Number of cells in region = ')
         cell_end   = out.find('\n',cell_start)
         num_cell = int(out[(cell_start+27):cell_end])
@@ -303,7 +312,7 @@ class GenerateExtrusion(bpy.types.Operator):
         for obj in bpy.context.selected_objects:
             obj.name = cur_objname+'_VM'
         
-        bpy.context.scene.objects.active = \
+        bpy.context.view_layer.objects.active = \
             bpy.data.objects[cur_objname+'_VM']
         bpy.context.object.show_all_edges = True
         bpy.context.object.show_wire = True
@@ -325,7 +334,7 @@ class GenerateExtrusion(bpy.types.Operator):
                     obj.name = cur_objname+'_VM_m' + str(m)
 
             
-                bpy.context.scene.objects.active = \
+                bpy.context.view_layer.objects.active = \
                     bpy.data.objects[cur_objname+'_VM_m'+str(m)]
                 bpy.context.object.show_all_edges = True
                 bpy.context.object.show_wire = True    
@@ -360,7 +369,6 @@ class ExportExtrusion(bpy.types.Operator):
         h.write('\n')
         h.write('newSurfMesh = chiSurfaceMeshCreate();\n')
         h.write('chiSurfaceMeshImportFromOBJFile(newSurfMesh,"')
-        #h.write(pathdir+"/"+cur_objname+'SurfaceMesh.obj')
         h.write("Mesh/" + cur_objname+'SurfaceMesh.obj')
         h.write('",true)\n')
         h.write('\n')
@@ -404,7 +412,7 @@ class ExportExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('surf_lv'+str(lv_count) + " = chiSurfaceMeshCreate();\n")
@@ -417,7 +425,7 @@ class ExportExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('chiSurfaceMeshImportFromOBJFile(')
@@ -431,7 +439,7 @@ class ExportExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('vol_lv'+str(lv_count)+' = ')
@@ -445,7 +453,7 @@ class ExportExtrusion(bpy.types.Operator):
             mater = chiprops.materials[m]
             grp   = mater.object_group
 
-            grp_data = bpy.data.groups[grp.name]
+            grp_data = bpy.data.collections[grp.name]
             for obj in grp_data.objects:
                 lv_count+=1
                 h.write('chiVolumeMesherSetProperty(')
