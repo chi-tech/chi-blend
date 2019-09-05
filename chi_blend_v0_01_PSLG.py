@@ -25,6 +25,12 @@ class MeshPSLGButton(bpy.types.Operator):
         if ((pathexe == "") or (pathexe == "..")):
             self.report({'WARNING'},"ChiTech executable path not set")
             return {"FINISHED"}
+
+        # Strip the root folder from the path
+        binstart = pathexe.find("bin")
+        chitech_root = pathexe[0:binstart]
+        tri_exe_path = chitech_root+"CHI_RESOURCES/Dependencies/triangle/"
+        tri_exe_path += "triangle -pqa"+str(chiprops.triangle_area)
         
         # Check working directory specified
         pathdir = context.scene.chitech_properties.path_to_workdir
@@ -60,19 +66,29 @@ class MeshPSLGButton(bpy.types.Operator):
         h.write('chiSurfaceMeshImportFromOBJFile(newSurfMesh,"')
         h.write("Mesh/"+cur_objname+'PreMesh.obj')
         h.write('",true)\n')
+        h.write('chiSurfaceMeshExportPolyFile(newSurfMesh,"Mesh/')
+        h.write(cur_objname+"PreMesh.poly" + '")\n\n')
+        h.write('command = "' + tri_exe_path+' "\n')
+        h.write('command = command .. "' + \
+            pathdir+'/Mesh/'+cur_objname+"PreMesh.poly"+'"\n')
+        h.write('os.execute(command)\n')
+        h.write('triSurfMesh = chiSurfaceMeshCreate();\n')
+        h.write('chiSurfaceMeshImportFromTriangleFiles(triSurfMesh,')
+        h.write('"Mesh/' + cur_objname+"PreMesh"+'")\n')
         h.write('\n')
-        h.write('region1 = chiRegionCreate()\n')
-        h.write('chiRegionAddSurfaceBoundary(region1,newSurfMesh);\n')
-        h.write('\n')
-        h.write('\n')
-        h.write('chiSurfaceMesherCreate(SURFACEMESHER_TRIANGLE);\n')
-        h.write('chiSurfaceMesherSetProperty(MAX_AREA,')
-        h.write(str(context.scene.chitech_properties.triangle_area))
-        h.write(')\n')
-        h.write('\n')
-        h.write('chiSurfaceMesherExecute();\n')
-        h.write('\n')
-        h.write('chiSurfaceMesherExportToObj("')
+        # h.write('region1 = chiRegionCreate()\n')
+        # h.write('chiRegionAddSurfaceBoundary(region1,triSurfMesh);\n')
+        # h.write('\n')
+        # h.write('\n')
+        # h.write('chiSurfaceMesherCreate(SURFACEMESHER_TRIANGLE);\n')
+        # h.write('chiSurfaceMesherSetProperty(MAX_AREA,')
+        # h.write(')\n')
+        # h.write('chiSurfaceMesherCreate(SURFACEMESHER_PREDEFINED);\n')
+
+        # h.write('\n')
+        # h.write('chiSurfaceMesherExecute();\n')
+        # h.write('\n')
+        h.write('chiSurfaceMeshExportToObj(triSurfMesh,"')
         h.write("Mesh/"+cur_objname+'PostMesh.obj')
         h.write('")\n')
         h.close()  
@@ -124,7 +140,7 @@ class MeshPSLGButton(bpy.types.Operator):
         print(bpy.data.objects[new_objname].data.polygons[0])
 
         #bpy.ops.object.editmode_toggle()
-        
+        print(tri_exe_path)
         
         return {"FINISHED"}
 

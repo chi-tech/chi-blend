@@ -33,7 +33,7 @@ class ChiTechProperties(bpy.types.PropertyGroup):
     path_to_chitech_exe = bpy.props.StringProperty(default="..",subtype='FILE_PATH')
     path_to_workdir     = bpy.props.StringProperty(default="..",subtype='DIR_PATH')
     current_object      = bpy.props.StringProperty()
-    triangle_area       = bpy.props.FloatProperty(min=0.001,step=0.1,default=10.0,precision=3)
+    triangle_area       = bpy.props.FloatProperty(min=0.00001,step=0.1,default=10.0,precision=3)
     tris_to_quads       = bpy.props.BoolProperty(default=True)
     
     xmin                = bpy.props.FloatProperty(default=-1.0e16)
