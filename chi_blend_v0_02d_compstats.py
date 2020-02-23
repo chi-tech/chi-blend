@@ -5,10 +5,12 @@ import subprocess
 
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class GetOpenEdgesButton(bpy.types.Operator):
+class ComputeMeshStats(bpy.types.Operator):
     bl_label = "Gets the open edges from a chitech server"
-    bl_idname = "chitech.getopenedgesbutton"  
+    bl_idname = "chitech.computemeshstats"  
     bl_options = {"UNDO"}
+    bl_description = "Exports Triangle mesh to ChiTech and computes " + \
+                     "mesh statistics. <Object>TriMesh"
 
     # ===========================================
     def invoke(self, context, event):
@@ -36,6 +38,9 @@ class GetOpenEdgesButton(bpy.types.Operator):
                    use_selection  = True,
                    use_materials  = False)
 
+        xcuts=[]
+        ycuts=[]
+
         # Write Chitech commands
         h = open(pathdir+"/Mesh/"+cur_objname+"OE.lua",'w')    
         h.write('chiMeshHandlerCreate()\n')
@@ -45,9 +50,26 @@ class GetOpenEdgesButton(bpy.types.Operator):
         h.write(pathdir+"Mesh/"+cur_objname+'SurfaceMesh.obj')
         h.write('",true)\n')
         h.write('\n')
-        h.write('chiSurfaceMeshExtractOpenEdgesToObj(newSurfMesh,"')
-        h.write('Mesh/EdgeAnalysis.obj")\n')
-        h.write('chiSurfaceMeshCheckCycles(newSurfMesh,64*4)')
+        # h.write('chiSurfaceMeshExtractOpenEdgesToObj(newSurfMesh,"')
+        # h.write('Mesh/EdgeAnalysis.obj")\n')
+        h.write('chiSurfaceMeshCheckCycles(newSurfMesh,64*4)\n\n')
+        # Extract current Xcut-lines
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_pattern(pattern="Xcut*")
+        h.write('xcuts={\n')
+        for obj in bpy.context.selected_objects:
+            h.write(str(obj.location[0])+',\n')
+            xcuts.append(obj.location[0])
+        h.write('}\n\n')
+        # Extract current Ycut-lines
+        bpy.ops.object.select_all(action='DESELECT')
+        bpy.ops.object.select_pattern(pattern="Ycut*")
+        h.write('ycuts={\n')
+        for obj in bpy.context.selected_objects:
+            h.write(str(obj.location[1])+',\n')
+            ycuts.append(obj.location[1])
+        h.write('}\n\n')
+        h.write('chiComputeLoadBalancing(newSurfMesh,xcuts,ycuts)\n')
         h.close()      
 
         # Execute ChiTech
@@ -62,33 +84,35 @@ class GetOpenEdgesButton(bpy.types.Operator):
         out,err = process.communicate()
         print(out)
 
+        # Update x and y cuts
+        chiprops.num_x_cuts = len(xcuts)
+        chiprops.num_y_cuts = len(ycuts)
+
+        chiprops.x_cuts.clear()
+        chiprops.y_cuts.clear()
+
+        xcuts.sort()
+        ycuts.sort()
+
+        for i in range(0,chiprops.num_x_cuts):
+                new_cut = chiprops.x_cuts.add()
+                new_cut.value = xcuts[i]
+
+        for j in range(0,chiprops.num_y_cuts):
+                new_cut = chiprops.y_cuts.add()
+                new_cut.value = ycuts[j]
+
         context.scene.chiutilsA.ShowMessageBox(out)
         
-
-
-
         # Import the generated file
-        bpy.ops.import_scene.obj(filepath=(pathdir+"/Mesh/"+'EdgeAnalysis.obj'),
-                                 axis_forward = 'Y',
-                                 axis_up      = 'Z')  
+        # bpy.ops.import_scene.obj(filepath=(pathdir+"/Mesh/"+'EdgeAnalysis.obj'),
+        #                          axis_forward = 'Y',
+        #                          axis_up      = 'Z')  
 
-        return {"FINISHED"}
-
-# $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
-class ExportTemplateMesh(bpy.types.Operator):
-    bl_label = "Exports the 2D mesh as a chitech template"
-    bl_idname = "chitech.exporttemplatebutton"  
-    bl_options = {"UNDO"}
-
-    # ===========================================
-    def invoke(self, context, event):
-        context.scene.chiutilsA.ExportTriMesh(context)
         return {"FINISHED"}
 
 def register():
-    bpy.utils.register_class(ExportTemplateMesh)
-    bpy.utils.register_class(GetOpenEdgesButton)
+    bpy.utils.register_class(ComputeMeshStats)
   
 def unregister():
-    bpy.utils.unregister_class(ExportTemplateMesh)
-    bpy.utils.unregister_class(GetOpenEdgesButton)
+    bpy.utils.unregister_class(ComputeMeshStats)

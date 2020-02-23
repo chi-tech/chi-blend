@@ -11,9 +11,12 @@ bl_info = {
 modulesNames = ['chi_blend_v0',
                 'chi_blend_v0_00_UI',
                 'chi_blend_v0_01_PSLG',
-                'chi_blend_v0_02_cuts',
-                'chi_blend_v0_03_imprintcuts',
-                'chi_blend_v0_04_export',
+                'chi_blend_v0_02a_cuts',
+                'chi_blend_v0_02b_cuts',
+                'chi_blend_v0_02c_imprintcuts',
+                'chi_blend_v0_02d_compstats',
+                'chi_blend_v0_02e_exporttrimesh',
+                'chi_blend_v0_02f_alignverts',
                 'chi_blend_v0_05_extrusion',
                 'chi_blend_v0_tools_a']
  

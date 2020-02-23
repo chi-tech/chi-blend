@@ -314,8 +314,8 @@ class GenerateExtrusion(bpy.types.Operator):
         
         bpy.context.view_layer.objects.active = \
             bpy.data.objects[cur_objname+'_VM']
-        bpy.context.object.show_all_edges = True
-        bpy.context.object.show_wire = True
+        bpy.data.objects[cur_objname+'_VM'].show_all_edges = True
+        bpy.data.objects[cur_objname+'_VM'].show_wire = True
 
         # Import individual material meshes
         if (len(chiprops.materials) != 0):
@@ -336,8 +336,8 @@ class GenerateExtrusion(bpy.types.Operator):
             
                 bpy.context.view_layer.objects.active = \
                     bpy.data.objects[cur_objname+'_VM_m'+str(m)]
-                bpy.context.object.show_all_edges = True
-                bpy.context.object.show_wire = True    
+                bpy.data.objects[cur_objname+'_VM_m'+str(m)].show_all_edges = True
+                bpy.data.objects[cur_objname+'_VM_m'+str(m)].show_wire = True    
         
         return {"FINISHED"}
 
@@ -430,7 +430,7 @@ class ExportExtrusion(bpy.types.Operator):
                 lv_count+=1
                 h.write('chiSurfaceMeshImportFromOBJFile(')
                 h.write('surf_lv'+str(lv_count)+',"')
-                h.write("Mesh/LV_" + obj.name + '.obj")\n') 
+                h.write("Mesh/LV_" + obj.name + '.obj",false)\n') 
 
         # Write material logical volumes creation
         h.write('\n')

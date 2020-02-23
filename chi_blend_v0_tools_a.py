@@ -2,10 +2,64 @@ import os
 import bpy
 from bpy_extras.io_utils import ExportHelper
 import numpy as np
+import mathutils
 
 class ChiUtilsA(bpy.types.PropertyGroup):
     def SayHello(self):
         print("Hello")
+
+    
+    def CreateXCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('X_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('X_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
+        for i in range(0,chiprops.num_x_cuts):
+            d = 0.1*(chiprops.ymax-chiprops.ymin)
+            dmin = chiprops.ymin-d
+            dmax = chiprops.ymax+d
+            f = chiprops.x_cuts[i].value
+
+            point1 = [ f, dmin, 0.0]
+            point2 = [ f, dmax, 0.0]
+            mesh = bpy.data.meshes.new("")
+            mesh.from_pydata([point1,point2], [[0,1]], [])
+            mesh.update()
+            
+            obj = bpy.data.objects.new("Xcut"+str(i),mesh)
+            new_origin = mathutils.Vector((f,dmin,0.0))
+            obj.data.transform(mathutils.Matrix.Translation(-new_origin))
+            obj.matrix_world.translation += new_origin
+ 
+            newCol.objects.link(obj)
+
+            obj.select_set(True)
+
+    def CreateYCuts(self,chiprops,context):
+        newCol = bpy.data.collections.get('Y_cuts')
+        if newCol == None:
+            newCol = bpy.data.collections.new('Y_cuts')
+            masterCol = bpy.data.collections[0]
+            masterCol.children.link(newCol)
+        for i in range(0,chiprops.num_y_cuts):
+            d = 0.1*(chiprops.xmax-chiprops.xmin)
+            dmin = chiprops.xmin-d
+            dmax = chiprops.xmax+d
+            f = chiprops.y_cuts[i].value
+            point1 = [ dmin, f, 0.0]
+            point2 = [ dmax, f, 0.0]
+            mesh = bpy.data.meshes.new("")
+            mesh.from_pydata([point1,point2], [[0,1]], [])
+            mesh.update()
+            
+            obj = bpy.data.objects.new("Ycut"+str(i),mesh)
+            new_origin = mathutils.Vector((dmin,f,0.0))
+            obj.data.transform(mathutils.Matrix.Translation(-new_origin))
+            obj.matrix_world.translation += new_origin
+            newCol.objects.link(obj)
+            
+            obj.select_set(True)
     
     def ComputeLBF(self,context):
         chiprops = context.scene.chitech_properties
@@ -120,6 +174,72 @@ class ChiUtilsA(bpy.types.PropertyGroup):
                 self.layout.label(text=line)
 
         bpy.context.window_manager.popup_menu(draw, title = title, icon = icon)
+    
+    def CheckChiPath(self,context):
+        chiprops = context.scene.chitech_properties
+        if (not os.path.exists(chiprops.path_to_chitech_exe)):
+            self.ShowMessageBox("Invalid path to ChiTech. Make sure " + \
+                                "it is not relative.",
+                                title="chi-blend error",
+                                icon='ERROR')
+            return False
+        return True
+
+    def CheckTrianglePath(self,context):
+        chiprops = context.scene.chitech_properties
+        if (not os.path.exists(chiprops.path_to_triangle_exe)):
+            self.ShowMessageBox("Invalid path to triangle executable " + \
+                                ". Make sure " + \
+                                "it is not relative.",
+                                title="chi-blend error",
+                                icon='ERROR')
+            return False
+        return True                    
+
+    def CheckWorkDirPath(self,context):
+        chiprops = context.scene.chitech_properties
+        if (chiprops.path_to_workdir[0:3]=="../"):
+            self.ShowMessageBox("Invalid path to working directory." + \
+                                "ChiTech requires absolute paths.",
+                                title="chi-blend error",
+                                icon='ERROR') 
+        if (chiprops.path_to_workdir[0:3]=="./"):
+            self.ShowMessageBox("Invalid path to working directory." + \
+                                "ChiTech requires absolute paths.",
+                                title="chi-blend error",
+                                icon='ERROR')                         
+        if (not os.path.isdir(chiprops.path_to_workdir)):
+            self.ShowMessageBox("Invalid path to working directory.",
+                                title="chi-blend error",
+                                icon='ERROR')    
+            return False
+        return True   
+
+    def CheckMeshDir(self,context):
+        chiprops = context.scene.chitech_properties 
+        pathdir = chiprops.path_to_workdir
+        if not os.path.exists(pathdir+'/Mesh'):
+            os.mkdir(pathdir+'/Mesh') 
+
+    def CheckAllPaths(self,context):
+        if (not self.CheckChiPath(context)):
+            return False
+        if (not self.CheckTrianglePath(context)):
+            return False
+        if (not self.CheckWorkDirPath(context)):
+            return False
+        # Create Mesh directory if not exist
+        self.CheckMeshDir(context)  
+        return True   
+
+    def CheckChiAndMeshPaths(self,context):
+        if (not self.CheckChiPath(context)):
+            return False
+        if (not self.CheckWorkDirPath(context)):
+            return False
+        # Create Mesh directory if not exist
+        self.CheckMeshDir(context)  
+        return True                                                                
 
 def register():
     bpy.utils.register_class(ChiUtilsA)

@@ -13,7 +13,7 @@ class VecDbl(bpy.types.PropertyGroup):
 # Same as above but holds information on an extrusion layer
 class VecExtrusionLayer(bpy.types.PropertyGroup):
     name   = bpy.props.StringProperty(default="")
-    height = bpy.props.FloatProperty(default=1.0,min=0.000001)
+    height = bpy.props.FloatProperty(default=1.0,min=0.000001,precision=5)
     subdivs= bpy.props.IntProperty(default=1,min=1,step=1)
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
@@ -31,6 +31,7 @@ class ChiTechProperties(bpy.types.PropertyGroup):
     bl_idname = "chitech.properties"
     
     path_to_chitech_exe = bpy.props.StringProperty(default="..",subtype='FILE_PATH')
+    path_to_triangle_exe = bpy.props.StringProperty(default="..",subtype='FILE_PATH')
     path_to_workdir     = bpy.props.StringProperty(default="..",subtype='DIR_PATH')
     current_object      = bpy.props.StringProperty()
     triangle_area       = bpy.props.FloatProperty(min=0.00001,step=0.1,default=10.0,precision=3)
@@ -45,6 +46,8 @@ class ChiTechProperties(bpy.types.PropertyGroup):
 
     x_cuts = bpy.props.CollectionProperty(type=VecDbl)
     y_cuts = bpy.props.CollectionProperty(type=VecDbl)
+
+    cut_epsilon         = bpy.props.FloatProperty(default=0.05,precision=4)
 
     load_bal_factor_i   = bpy.props.FloatProperty(default=1.0,precision=3)
     load_bal_factor_f   = bpy.props.FloatProperty(default=1.0,precision=3)
