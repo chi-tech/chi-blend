@@ -8,9 +8,12 @@ class ToolsPanel(bpy.types.Panel):
     """Creates a Panel in the scene context of the properties editor"""
     bl_label = "ChiTech Mesh Operations"
     bl_idname = "chitech.panel"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
+    # bl_space_type = 'VIEW_3D'
+    # bl_region_type = 'TOOLS'
+    # bl_context = "objectmode"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "world"
     
     props=[]
 
@@ -21,6 +24,10 @@ class ToolsPanel(bpy.types.Panel):
         # Path to executable
         layout.label(text=" Path to ChiTech executable:")
         layout.prop(scene.chitech_properties, 'path_to_chitech_exe',text="")
+
+        # Path to triangle
+        layout.label(text=" Path to Triangle executable:")
+        layout.prop(scene.chitech_properties, 'path_to_triangle_exe',text="")
         
         # Path to working dir
         layout.label(text=" Path to Working Directory:")
@@ -63,11 +70,15 @@ class ToolsPanel(bpy.types.Panel):
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class SimpleLoadBalanceMenu(bpy.types.Panel):
     bl_label  = "Simple load balancing tools"
-    bl_idname = "chiteh.simpleLB"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
-    bl_options = {'DEFAULT_CLOSED'}
+    bl_idname = "chitech.simpleLB"
+    # bl_space_type = 'VIEW_3D'
+    # bl_region_type = 'TOOLS'
+    # bl_context = "objectmode"
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "world"
+    # bl_options = {'DEFAULT_CLOSED'}
+    bl_parent_id = "chitech.panel"
 
     def draw(self,context):
         layout = self.layout
@@ -83,43 +94,53 @@ class SimpleLoadBalanceMenu(bpy.types.Panel):
         col2.prop(scene.chitech_properties,"num_y_cuts",text="")
 
         #Load balance factors
-        split = layout.split(factor=0.8)
-        col1 = split.column()
-        col2 = split.column()
-        col1.label(text="Estimated LBF before imprinting: ")
-        col2.label(text=str(scene.chitech_properties.load_bal_factor_i))
-        col1.label(text="After imprint LBF: ")
-        col2.label(text=str(scene.chitech_properties.load_bal_factor_f))
+        # split = layout.split(factor=0.8)
+        # col1 = split.column()
+        # col2 = split.column()
+        # col1.label(text="Estimated LBF before imprinting: ")
+        # col2.label(text=str(scene.chitech_properties.load_bal_factor_i))
+        # col1.label(text="After imprint LBF: ")
+        # col2.label(text=str(scene.chitech_properties.load_bal_factor_f))
 
-        row = layout.row()
-        row.label(text="Live update LBF: ")
-        row.prop(scene.chitech_properties,"lbf_live_update",text="")
+        # row = layout.row()
+        # row.label(text="Live update LBF: ")
+        # row.prop(scene.chitech_properties,"lbf_live_update",text="")
 
 
         # Generate cutlines button
         layout.operator("chitech.addcutsbutton",text="Generate Eq.Spaced Cutlines")
         layout.operator("chitech.addbalcutsbutton",text="Generate Balanced Cutlines")
 
+        # layout.row()
+        # row.label(text="Cut epsilon:")
+        # row.prop(scene.chitech_properties,"cut_epsilon",text="")
+
         # Imprint cutlines button
-        split = layout.split(factor=0.75)
-        col1 = split.column()
-        col2 = split.column()
-        split1 = col1.split(factor=(1/3))
-        col1_1 = split1.column()
-        col1_2 = split1.column()
-        col1_2.operator("chitech.imprintcutsbutton",text="Imprint Cutlines")
-        layout.operator("chitech.getopenedgesbutton",text="Compute Mesh Stats")
-        layout.operator("chitech.exporttemplatebutton",text="Export ChiTech Mesh")
+        # split = layout.split(factor=0.75)
+        # col1 = split.column()
+        # col2 = split.column()
+        # split1 = col1.split(factor=(1/3))
+        # col1_1 = split1.column()
+        # col1_1.operator("chitech.alignvertices",text="Align vertices")
+        # col1_2 = split1.column()
+        # col1_2.operator("chitech.imprintcutsbutton",text="Imprint Cutlines")
+        layout.operator("chitech.computemeshstats",text="Compute Mesh Stats")
+        layout.operator("chitech.exporttemplatebutton",text="Export 2D ChiTech Mesh")
         
 
 # $$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$
 class ExtrusionMeshPanel(bpy.types.Panel):
     bl_label  = "Extrusion Mesh tools"
     bl_idname = "chiteh.extrusionmesh"
-    bl_space_type = 'VIEW_3D'
-    bl_region_type = 'TOOLS'
-    bl_context = "objectmode"
-    bl_options = {'DEFAULT_CLOSED'}
+    # bl_space_type = 'VIEW_3D'
+    # bl_region_type = 'TOOLS'
+    # bl_context = "objectmode"
+    # bl_options = {'DEFAULT_CLOSED'}
+    bl_space_type = 'PROPERTIES'
+    bl_region_type = 'WINDOW'
+    bl_context = "world"
+    # bl_options = {'DEFAULT_CLOSED'}
+    bl_parent_id = "chitech.panel"
 
     def draw(self,context):
         layout = self.layout
@@ -143,8 +164,12 @@ class ExtrusionMeshPanel(bpy.types.Panel):
             row.prop(chiprops.materials[i],"object_group",text="")
 
         row = layout.row()
-        row.label(text="Extrusion layers")
-        row.prop(chiprops,"layer_insert_before",text="Insert after")
+        cols = row.split(factor=0.25)
+        col1 = cols.column()
+        col1.label(text="Extrusion layers:")
+        col2 = cols.column()
+        row = col2.row()
+        row.prop(chiprops,"layer_insert_before",text="Insert before/Remove at")
         row.operator("chitech.addextrusionlayer",icon='TRIA_UP',text="")
         row.operator("chitech.removeextrusionlayer",icon='TRIA_DOWN',text="")
 
